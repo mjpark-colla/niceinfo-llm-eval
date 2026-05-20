@@ -1,0 +1,10 @@
+models/
+data/
+results/
+*.gguf
+*.safetensors
+*.bin
+__pycache__/
+*.pyc
+.env
+*.log

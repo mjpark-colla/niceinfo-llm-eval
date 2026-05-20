@@ -1,0 +1,52 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.11.0
+    container_name: niceinfo-vllm
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ipc: host
+    volumes:
+      - ./models:/models
+    environment:
+      - HF_HOME=/models
+      - HF_TOKEN=${HF_TOKEN:-}
+    ports:
+      - '8000:8000'
+    command:
+      - --model
+      - ${MODEL_NAME:-Qwen/Qwen3-32B-AWQ}
+      - --max-model-len
+      - '8192'
+      - --gpu-memory-utilization
+      - '0.9'
+      - --dtype
+      - auto
+    restart: 'no'
+
+  eval:
+    build:
+      context: .
+      dockerfile: Dockerfile.eval
+    container_name: niceinfo-eval
+    volumes:
+      - ./eval:/app/eval
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./models:/app/models:ro
+    environment:
+      - VLLM_BASE_URL=http://vllm:8000/v1
+      - HF_HOME=/app/models
+      - HF_TOKEN=${HF_TOKEN:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    depends_on:
+      - vllm
+    working_dir: /app
+    command: tail -f /dev/null  # 계속 실행, 안에서 exec로 명령 실행
+    restart: 'no'
