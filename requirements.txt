@@ -29,3 +29,4 @@ tqdm
 pyyaml
 python-dotenv
 jsonlines
+tenacity>=8.5
