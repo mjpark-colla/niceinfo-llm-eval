@@ -41,7 +41,7 @@ services:
       - ./models:/app/models:ro
     environment:
       - VLLM_BASE_URL=http://vllm:8000/v1
-      - HF_HOME=/app/models
+      - HF_HOME=/app/data/hf_cache
       - HF_TOKEN=${HF_TOKEN:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}

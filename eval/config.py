@@ -19,8 +19,11 @@ class ModelConfig:
 
 @dataclass
 class JudgeConfig:
-    primary_model: str = "gpt-5"           # 1순위
-    fallback_model: str = "gpt-4o"         # primary 접근 불가 시 자동
+    # GPT-4 family가 LLM-as-Judge 사실상 표준 (Zheng et al. NeurIPS 2023).
+    # gpt-4o가 현재 GPT-4 family 대표 — 한국어 평가에서도 KMMLU 등이 채택.
+    # 근거: references/judge-model-choice.md
+    primary_model: str = "gpt-4o"
+    fallback_model: str = "gpt-4o-mini"
     temperature: float = 0.0
     max_tokens: int = 500
     max_retries: int = 3

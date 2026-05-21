@@ -29,17 +29,25 @@ class KoMTBench(Benchmark):
         for item in items:
             qid = item.get("question_id") or item.get("id") or item.get("idx")
             category = item.get("category", "unknown")
-            turns = item.get("turns") or []
-            reference = item.get("reference") or item.get("reference_answer")
+            # ko-bench actual schema: pairs = [{"prompt": ..., "refer": ...}, ...]
+            pairs = item.get("pairs") or []
 
-            if not turns:
+            if not pairs:
+                continue
+
+            prompts = [p.get("prompt", "") for p in pairs if p.get("prompt")]
+            refers = [p.get("refer", "") for p in pairs]
+            has_ref = any(r.strip() for r in refers if r)
+            reference = refers if has_ref else None
+
+            if not prompts:
                 continue
 
             yield Sample(
                 id=f"ko_mt-{qid}",
-                prompt=turns[0],
+                prompt=prompts[0],
                 reference=reference,
-                follow_up_prompts=turns[1:],
+                follow_up_prompts=prompts[1:],
                 metadata={"category": category, "question_id": qid},
             )
 
