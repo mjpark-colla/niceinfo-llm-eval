@@ -45,7 +45,7 @@ class LogicKor(Benchmark):
     def is_multi_turn(self) -> bool:
         return True
 
-    def evaluate_turn(
+    async def evaluate_turn(
         self,
         sample: Sample,
         turn_idx: int,
@@ -56,7 +56,6 @@ class LogicKor(Benchmark):
         if judge is None:
             raise ValueError("LogicKor는 judge가 필요합니다.")
 
-        # reference는 turn별로 매칭 (있을 때)
         ref = None
         if isinstance(sample.reference, list) and len(sample.reference) >= turn_idx:
             ref_for_turn = sample.reference[turn_idx - 1]
@@ -66,7 +65,7 @@ class LogicKor(Benchmark):
         if turn_idx > 1:
             context = f"턴 1 질문: {sample.prompt}"
 
-        result = judge.score(
+        result = await judge.score(
             question=prompt,
             answer=model_output,
             reference=ref,

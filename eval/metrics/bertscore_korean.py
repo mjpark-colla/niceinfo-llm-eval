@@ -5,12 +5,16 @@ from bert_score import score as bert_score
 
 # 한국어 BERT 모델 (고정)
 DEFAULT_MODEL_TYPE = "klue/roberta-large"
+# klue/roberta-large는 24 layers. BERTScore는 중상위 layer 권장.
+# bert-score 라이브러리에 klue/roberta-large 자동 매핑 없어 명시 필요.
+DEFAULT_NUM_LAYERS = 17
 
 
 def compute_bertscore(
     predictions: list[str],
     references: list[str | list[str]],
     model_type: str = DEFAULT_MODEL_TYPE,
+    num_layers: int = DEFAULT_NUM_LAYERS,
     batch_size: int = 16,
 ) -> dict:
     """배치 BERTScore F1 계산.
@@ -31,6 +35,7 @@ def compute_bertscore(
                 [pred] * len(refs_list),
                 refs_list,
                 model_type=model_type,
+                num_layers=num_layers,
                 lang="ko",
                 batch_size=batch_size,
                 verbose=False,
@@ -44,6 +49,7 @@ def compute_bertscore(
         predictions,
         references,
         model_type=model_type,
+        num_layers=num_layers,
         lang="ko",
         batch_size=batch_size,
         verbose=False,

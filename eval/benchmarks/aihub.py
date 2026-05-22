@@ -63,7 +63,7 @@ class AIHubBase(Benchmark):
                 },
             )
 
-    def evaluate_turn(
+    async def evaluate_turn(
         self,
         sample: Sample,
         turn_idx: int,

@@ -1,8 +1,8 @@
-"""LLM-as-Judge 호출 (OpenAI gpt-5 primary, gpt-4o fallback)."""
+"""LLM-as-Judge 호출 (OpenAI gpt-4o primary, gpt-4o-mini fallback). 비동기 버전."""
 import os
 import re
 import logging
-from openai import OpenAI, NotFoundError, APIError
+from openai import AsyncOpenAI, NotFoundError, APIError
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from eval.config import JudgeConfig
@@ -19,7 +19,7 @@ class LLMJudge:
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY 환경변수가 필요합니다.")
-        self.client = OpenAI(api_key=api_key)
+        self.client = AsyncOpenAI(api_key=api_key)
         self.config = config
         self._active_model = config.primary_model
         self._fallback_attempted = False
@@ -33,9 +33,9 @@ class LLMJudge:
         wait=wait_exponential(multiplier=2, min=2, max=20),
         retry=retry_if_exception_type(APIError),
     )
-    def _call(self, system: str, user: str, model: str) -> tuple[str, int, int]:
+    async def _call(self, system: str, user: str, model: str) -> tuple[str, int, int]:
         """OpenAI Chat Completions 호출 → (raw_text, tokens_in, tokens_out)."""
-        resp = self.client.chat.completions.create(
+        resp = await self.client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system},
@@ -50,29 +50,19 @@ class LLMJudge:
             resp.usage.completion_tokens,
         )
 
-    def score(
+    async def score(
         self,
         question: str,
         answer: str,
         reference: str | list[str] | None = None,
         context: str | None = None,
     ) -> dict:
-        """답변을 1~10점으로 채점.
-
-        반환 dict:
-          - score: float (1~10)
-          - raw: judge 원본 응답
-          - judge_model: 사용된 모델
-          - tokens_in / tokens_out
-          - cost_usd
-        """
+        """답변을 1~10점으로 채점 (async)."""
         system, user = build_judge_prompt(question, answer, reference, context)
 
-        # primary 모델 호출
         try:
-            raw, tin, tout = self._call(system, user, self._active_model)
+            raw, tin, tout = await self._call(system, user, self._active_model)
         except NotFoundError:
-            # primary 접근 불가 (404) → fallback 전환
             if not self._fallback_attempted:
                 log.warning(
                     f"Judge {self._active_model} 사용 불가, "
@@ -80,7 +70,7 @@ class LLMJudge:
                 )
                 self._active_model = self.config.fallback_model
                 self._fallback_attempted = True
-            raw, tin, tout = self._call(system, user, self._active_model)
+            raw, tin, tout = await self._call(system, user, self._active_model)
 
         score = self._parse_score(raw)
         cost = calc_openai_cost(self._active_model, tin, tout)
@@ -100,6 +90,5 @@ class LLMJudge:
         m = re.search(r"점수\s*[:：]\s*(\d+(?:\.\d+)?)", raw)
         if m:
             score = float(m.group(1))
-            # 1~10 범위로 clip
             return max(1.0, min(10.0, score))
         return 0.0

@@ -19,10 +19,10 @@ class KoIFEval(Benchmark):
     name = "ko_ifeval"
     metric_type = "auto"
 
-    # Ko-IFEval은 여러 미러가 있음. 가장 표준적인 곳 시도
+    # Ko-IFEval은 allganize가 공식 한국어 번역본 공개
+    # https://huggingface.co/datasets/allganize/IFEval-Ko
     HF_CANDIDATES = [
-        "Bllossom/Ko-IFEval",
-        "iamjoon/ko_ifeval",
+        "allganize/IFEval-Ko",
     ]
 
     def samples(self, limit: int | None = None, seed: int = 42) -> Iterable[Sample]:
@@ -57,7 +57,7 @@ class KoIFEval(Benchmark):
                 },
             )
 
-    def evaluate_turn(
+    async def evaluate_turn(
         self,
         sample: Sample,
         turn_idx: int,

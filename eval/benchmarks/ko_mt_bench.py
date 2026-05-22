@@ -54,7 +54,7 @@ class KoMTBench(Benchmark):
     def is_multi_turn(self) -> bool:
         return True
 
-    def evaluate_turn(
+    async def evaluate_turn(
         self,
         sample: Sample,
         turn_idx: int,
@@ -68,7 +68,6 @@ class KoMTBench(Benchmark):
         # 1턴은 context 없음, 2턴 이상은 이전 turn 누적
         context = None
         if turn_idx > 1:
-            # context로 1턴 prompt + 답변 전달 — 평가 시 컨텍스트
             context = f"턴 1 질문: {sample.prompt}\n(턴 1 답변 생략)"
 
         ref = None
@@ -76,7 +75,7 @@ class KoMTBench(Benchmark):
             ref = sample.reference if isinstance(sample.reference, list) else \
                   ([sample.reference[turn_idx - 1]] if isinstance(sample.reference, list) and len(sample.reference) >= turn_idx else None)
 
-        result = judge.score(
+        result = await judge.score(
             question=prompt,
             answer=model_output,
             reference=ref,

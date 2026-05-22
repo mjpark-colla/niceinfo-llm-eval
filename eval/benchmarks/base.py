@@ -80,7 +80,7 @@ class Benchmark(ABC):
         ...
 
     @abstractmethod
-    def evaluate_turn(
+    async def evaluate_turn(
         self,
         sample: Sample,
         turn_idx: int,
@@ -88,7 +88,7 @@ class Benchmark(ABC):
         model_output: str,
         judge=None,
     ) -> TurnResult:
-        """한 turn 평가하여 TurnResult 반환."""
+        """한 turn 평가하여 TurnResult 반환 (async)."""
         ...
 
     def is_multi_turn(self) -> bool:

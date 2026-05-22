@@ -1,8 +1,8 @@
-"""평가 대상 모델 호출 추상화 (vLLM = OpenAI 호환 API)."""
+"""평가 대상 모델 호출 추상화 (vLLM = OpenAI 호환 API). 비동기 버전."""
 import os
 import time
 import logging
-from openai import OpenAI, APIError
+from openai import AsyncOpenAI, APIError
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from eval.config import ModelConfig
@@ -14,28 +14,27 @@ log = logging.getLogger(__name__)
 class TargetClient:
     """평가 대상 모델 호출. vLLM OpenAI 호환 API.
 
-    멀티턴 대화 지원.
+    비동기 호출 지원. 멀티턴 대화 지원.
     """
 
     def __init__(self, config: ModelConfig):
         self.config = config
         api_key = os.environ.get(config.api_key_env or "VLLM_API_KEY", "EMPTY")
-        self.client = OpenAI(api_key=api_key, base_url=config.base_url)
+        self.client = AsyncOpenAI(api_key=api_key, base_url=config.base_url)
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=2, min=2, max=15),
         retry=retry_if_exception_type(APIError),
     )
-    def _call(self, messages: list[dict]) -> tuple[str, int, int, float]:
+    async def _call(self, messages: list[dict]) -> tuple[str, int, int, float]:
         """OpenAI 호환 호출 → (text, tokens_in, tokens_out, elapsed_sec)."""
         t0 = time.perf_counter()
-        # Qwen3 thinking 토글 지원 (vLLM 0.11+)
         extra = {}
         if not self.config.enable_thinking:
             extra["chat_template_kwargs"] = {"enable_thinking": False}
 
-        resp = self.client.chat.completions.create(
+        resp = await self.client.chat.completions.create(
             model=self.config.name,
             messages=messages,
             temperature=self.config.temperature,
@@ -50,9 +49,9 @@ class TargetClient:
 
         return text, resp.usage.prompt_tokens, resp.usage.completion_tokens, elapsed
 
-    def chat_single(self, prompt: str) -> dict:
+    async def chat_single(self, prompt: str) -> dict:
         """단일 turn 호출."""
-        text, tin, tout, elapsed = self._call([
+        text, tin, tout, elapsed = await self._call([
             {"role": "user", "content": prompt}
         ])
         return {
@@ -62,17 +61,13 @@ class TargetClient:
             "elapsed_sec": elapsed,
         }
 
-    def chat_multi_turn(self, prompts: list[str]) -> list[dict]:
-        """멀티턴 호출. 각 turn마다 이전 대화 history 누적.
-
-        prompts = [turn1_user_prompt, turn2_user_prompt, ...]
-        반환: 각 turn별 결과 dict 리스트
-        """
+    async def chat_multi_turn(self, prompts: list[str]) -> list[dict]:
+        """멀티턴 호출. 각 turn마다 이전 대화 history 누적."""
         messages: list[dict] = []
         results = []
         for prompt in prompts:
             messages.append({"role": "user", "content": prompt})
-            text, tin, tout, elapsed = self._call(messages)
+            text, tin, tout, elapsed = await self._call(messages)
             messages.append({"role": "assistant", "content": text})
             results.append({
                 "text": text,
