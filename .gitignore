@@ -1,6 +1,10 @@
 models/
 data/
 results/
+results_8k_baseline/
+logs/
+scripts/*.pid
+*.pid
 *.gguf
 *.safetensors
 *.bin

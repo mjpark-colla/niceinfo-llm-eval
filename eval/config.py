@@ -37,7 +37,7 @@ class BenchmarkSpec:
     seed: int = 42
 
 
-# 평가 대상 모델 (운영 후보군 — Qwen 3개)
+# 평가 대상 모델 (운영 후보군)
 TARGET_MODELS = [
     ModelConfig(
         name="Qwen/Qwen3-32B-AWQ",
@@ -53,6 +53,12 @@ TARGET_MODELS = [
         name="Qwen/Qwen3.6-35B-A3B",
         display_name="Qwen3.6-35B-A3B-BF16",
         quantization="bf16",
+    ),
+    # 공식 FP8 양자화 — H100 NVL native 지원, 운영 환경 최적
+    ModelConfig(
+        name="Qwen/Qwen3.6-35B-A3B-FP8",
+        display_name="Qwen3.6-35B-A3B-FP8",
+        quantization="fp8",
     ),
 ]
 
