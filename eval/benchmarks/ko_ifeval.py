@@ -64,9 +64,12 @@ class KoIFEval(Benchmark):
         prompt: str,
         model_output: str,
         judge=None,
+        prev_turn: TurnResult | None = None,
     ) -> TurnResult:
         """간단한 자동 룰 채점. 본격 IFEval 룰은 별도 라이브러리 사용 권장,
-        여기는 간이 구현 (strict/loose accuracy 평균)."""
+        여기는 간이 구현 (strict/loose accuracy 평균).
+
+        prev_turn은 단일턴이라 사용 안 함 (signature 일치용)."""
         instruction_ids = sample.metadata.get("instruction_ids", [])
         kwargs_list = sample.metadata.get("kwargs", [])
 

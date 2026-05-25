@@ -52,6 +52,7 @@ class LogicKor(Benchmark):
         prompt: str,
         model_output: str,
         judge=None,
+        prev_turn: TurnResult | None = None,
     ) -> TurnResult:
         if judge is None:
             raise ValueError("LogicKor는 judge가 필요합니다.")
@@ -61,15 +62,22 @@ class LogicKor(Benchmark):
             ref_for_turn = sample.reference[turn_idx - 1]
             ref = ref_for_turn if ref_for_turn else None
 
-        context = None
-        if turn_idx > 1:
-            context = f"턴 1 질문: {sample.prompt}"
+        # 멀티턴: 이전 turn 정보 전달
+        prev_question = None
+        prev_answer = None
+        if turn_idx > 1 and prev_turn is not None:
+            prev_question = prev_turn.prompt
+            prev_answer = prev_turn.model_output
+        elif turn_idx > 1 and prev_turn is None:
+            prev_question = sample.prompt
+            prev_answer = "(이전 답변 생략)"
 
-        result = await judge.score(
+        result = await judge.score_reasoning(
             question=prompt,
             answer=model_output,
             reference=ref,
-            context=context,
+            prev_question=prev_question,
+            prev_answer=prev_answer,
         )
 
         return TurnResult(

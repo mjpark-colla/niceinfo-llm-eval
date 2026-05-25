@@ -75,8 +75,10 @@ async def evaluate_sample(
         outputs = [await client.chat_single(all_prompts[0])]
 
     for i, (prompt, out) in enumerate(zip(all_prompts, outputs), start=1):
+        prev_turn = result.turns[-1] if result.turns else None
         turn_result = await benchmark.evaluate_turn(
             sample, turn_idx=i, prompt=prompt, model_output=out["text"], judge=judge,
+            prev_turn=prev_turn,
         )
         turn_result.tokens_in = out["tokens_in"]
         turn_result.tokens_out = out["tokens_out"]

@@ -87,8 +87,14 @@ class Benchmark(ABC):
         prompt: str,
         model_output: str,
         judge=None,
+        prev_turn: "TurnResult | None" = None,
     ) -> TurnResult:
-        """한 turn 평가하여 TurnResult 반환 (async)."""
+        """한 turn 평가하여 TurnResult 반환 (async).
+
+        Args:
+            prev_turn: 멀티턴 평가 시 이전 turn 결과 (judge에 맥락 전달용).
+                      단일턴 벤치는 무시. turn_idx == 1 일 때도 None.
+        """
         ...
 
     def is_multi_turn(self) -> bool:

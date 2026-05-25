@@ -1,6 +1,7 @@
 models/
 data/
 results/
+results_v2/
 results_8k_baseline/
 logs/
 scripts/*.pid
@@ -12,3 +13,5 @@ __pycache__/
 *.pyc
 .env
 *.log
+.venv/
+reports/index.html

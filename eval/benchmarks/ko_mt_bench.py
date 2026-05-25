@@ -61,25 +61,35 @@ class KoMTBench(Benchmark):
         prompt: str,
         model_output: str,
         judge=None,
+        prev_turn: TurnResult | None = None,
     ) -> TurnResult:
         if judge is None:
             raise ValueError("Ko-MT-Bench는 judge가 필요합니다.")
 
-        # 1턴은 context 없음, 2턴 이상은 이전 turn 누적
-        context = None
-        if turn_idx > 1:
-            context = f"턴 1 질문: {sample.prompt}\n(턴 1 답변 생략)"
-
+        # turn별 reference 추출
         ref = None
-        if sample.reference:
-            ref = sample.reference if isinstance(sample.reference, list) else \
-                  ([sample.reference[turn_idx - 1]] if isinstance(sample.reference, list) and len(sample.reference) >= turn_idx else None)
+        if isinstance(sample.reference, list) and len(sample.reference) >= turn_idx:
+            ref_for_turn = sample.reference[turn_idx - 1]
+            ref = ref_for_turn if ref_for_turn else None
 
-        result = await judge.score(
+        # 멀티턴: 이전 turn 정보 전달 (실제 이전 답변 포함)
+        prev_question = None
+        prev_answer = None
+        if turn_idx > 1 and prev_turn is not None:
+            prev_question = prev_turn.prompt
+            prev_answer = prev_turn.model_output
+
+        # 멀티턴이지만 prev_turn 없으면 (legacy 호출) — sample.prompt가 1턴 질문
+        elif turn_idx > 1 and prev_turn is None:
+            prev_question = sample.prompt
+            prev_answer = "(이전 답변 생략)"
+
+        result = await judge.score_dialogue(
             question=prompt,
             answer=model_output,
             reference=ref,
-            context=context,
+            prev_question=prev_question,
+            prev_answer=prev_answer,
         )
 
         return TurnResult(

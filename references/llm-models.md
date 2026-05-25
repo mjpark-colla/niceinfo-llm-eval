@@ -132,8 +132,16 @@
 | Qwen3-30B-A3B | MoE | 30.5B / 3.3B | 32K→131K | 텍스트 | ✅ vLLM 가능 |
 | Qwen3-32B-AWQ | Dense (4bit) | 32.8B | 32K→131K | 텍스트 | ✅ vLLM 가능 |
 | Qwen3.6-35B-A3B | Hybrid MoE | 35B / 3B | 262K→1M | 텍스트/이미지/영상 | ✅ vLLM 가능 |
+| **Qwen3.6-35B-A3B-FP8** | Hybrid MoE (FP8) | 35B / 3B | 262K→1M | 텍스트/이미지/영상 | ✅ **권장** (메모리 1/2, H100 native) |
 | GLM-5.1 | MoE | 754B / 40B | 203K | 텍스트 | ❌ vLLM 불가, ⚠️ llama.cpp만 |
 | Kimi K2.5 | MoE | 1T / 32B | 262K | 텍스트/이미지 | ❌ vLLM 불가, ⚠️ llama.cpp만 |
+
+### Qwen3.6-35B-A3B 변형 선택 가이드
+
+| 변형 | 메모리 | A100 | H100 | 평가/운영 |
+|---|---|---|---|---|
+| BF16 (원본) | ~70GB | ⚠️ 빠듯 | ✅ | 평가용 |
+| **FP8 (공식)** | **~35GB** | ⚠️ emulation | ✅ **native** | **운영 권장** |
 
 ---
 
