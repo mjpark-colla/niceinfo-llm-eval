@@ -235,7 +235,7 @@ def _parse_summarization(raw: str) -> tuple[float, dict]:
     details = {}
     for key, patterns in dim_patterns.items():
         for p in patterns:
-            m = re.search(rf"{p}\s*[:：]\s*(\d+(?:\.\d+)?)", raw, re.IGNORECASE)
+            m = re.search(rf"{p}\s*[:：]\s*\[?\s*(\d+(?:\.\d+)?)\s*\]?", raw, re.IGNORECASE)
             if m:
                 try:
                     val = float(m.group(1))
@@ -244,9 +244,9 @@ def _parse_summarization(raw: str) -> tuple[float, dict]:
                 except ValueError:
                     continue
 
-    # 종합 추출
+    # 종합 추출 — judge가 "종합: [9.6]" 같이 대괄호 표기하는 케이스도 잡음
     overall = None
-    m = re.search(r"종합\s*[:：]\s*(\d+(?:\.\d+)?)", raw)
+    m = re.search(r"종합\s*(?:점수)?\s*[:：]\s*\[?\s*(\d+(?:\.\d+)?)\s*\]?", raw)
     if m:
         try:
             overall = float(m.group(1))

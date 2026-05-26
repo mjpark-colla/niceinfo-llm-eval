@@ -43,6 +43,14 @@
 - 평가 vs 운영 환경 정합성
 - 본 프로젝트 결정 요약
 
+### 6. [speed-benchmark.md](./speed-benchmark.md) ⚡ 실측
+**5 모델 속도·메모리 실측 결과 (2026-05-26, A100 80GB)**
+- TTFT, Decode TPS, VRAM 점유 매트릭스
+- Qwen3-32B 양자화(AWQ) vs 무양자화(BF16) 비교
+- 속도 결정 요인 3가지 (MoE 구조 / 양자화 / FP8)
+- "19GB 점유"의 진짜 의미 (weights vs 운영 점유)
+- v1 추정 vs v2 실측 비교
+
 ---
 
 ## 문서 작성 가이드
