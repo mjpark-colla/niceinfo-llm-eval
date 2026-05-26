@@ -1,0 +1,13 @@
+{
+  "Qwen3.6-35B-A3B-FP8": {
+    "per_benchmark": {
+      "aihub_90": 9.526666666666658,
+      "logickor": 8.555555555555557,
+      "ko_mt_bench": 8.771875,
+      "ko_ifeval": 9.327777777777778,
+      "aihub_582": 9.337333333333323
+    },
+    "weighted_total": 9.114657638888886,
+    "n_benchmarks": 5
+  }
+}
